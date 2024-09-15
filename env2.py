@@ -80,9 +80,9 @@ class SepsisTreatmentEnv(gym.Env):
         pass
 
 # 数据文件路径
-patient_data_path = 'path/to/patient.csv'
-infusion_data_path = 'path/to/infusiondrug.csv'
-vital_data_path = 'path/to/vitalperiodic.csv'
+patient_data_path = '/Users/tony.ren/Desktop/patient1.csv '
+infusion_data_path = '/Users/tony.ren/Desktop/infusion.csv '
+vital_data_path = '/Users/tony.ren/Desktop/vitalperiodic3.csv '
 
 # 创建环境
 env = SepsisTreatmentEnv(patient_data_path, infusion_data_path, vital_data_path)
