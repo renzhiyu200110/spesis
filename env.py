@@ -23,7 +23,7 @@ class SepsisTreatmentEnv(gym.Env):
         # 记录当前状态和步数
         self.current_patient_id = None
         self.current_step = 0
-        self.current_infusions = None
+        self.current_infusions = None1
 
     def reset(self):
         # 随机选择一个病人
