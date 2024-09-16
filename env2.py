@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import gym
 import  stable_baselines3
+from gymnasium import spaces
+import  gym
+from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import EvalCallback
 
 # 自定义环境
@@ -10,9 +13,9 @@ class SepsisTreatmentEnv(gym.Env):
         super(SepsisTreatmentEnv, self).__init__()
 
         # 数据加载
-        self.patients = pd.read_csv(patient_data)  # 患者信息
-        self.infusion_drugs = pd.read_csv(infusion_data)  # 注射药物信息
-        self.vital_periods = pd.read_csv(vital_data)  # 生命体征信息
+        self.patients = pd.read_csv(patient_data,low_memory=False)  # 患者信息
+        self.infusion_drugs = pd.read_csv(infusion_data,low_memory=False)  # 注射药物信息
+        self.vital_periods = pd.read_csv(vital_data,low_memory=False)  # 生命体征信息
 
         # 设定状态空间
         self.observation_space = spaces.Box(low=-1, high=np.inf, shape=(3,), dtype=np.float32)  # -1 用于表示缺失值
@@ -80,9 +83,9 @@ class SepsisTreatmentEnv(gym.Env):
         pass
 
 # 数据文件路径
-patient_data_path = '/Users/tony.ren/Desktop/patient1.csv '
-infusion_data_path = '/Users/tony.ren/Desktop/infusion.csv '
-vital_data_path = '/Users/tony.ren/Desktop/vitalperiodic3.csv '
+patient_data_path = r'/Users/tony.ren/Desktop/qhxx/patient1.csv'
+infusion_data_path = r'/Users/tony.ren/Desktop/qhxx/infusion.csv'
+vital_data_path = r'/Users/tony.ren/Desktop/qhxx/vitalperiodic3.csv'
 
 # 创建环境
 env = SepsisTreatmentEnv(patient_data_path, infusion_data_path, vital_data_path)
