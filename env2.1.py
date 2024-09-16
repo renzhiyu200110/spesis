@@ -1,9 +1,7 @@
 import numpy as np
 import pandas as pd
 import gym
-import  stable_baselines3
-from gymnasium import spaces
-import  gym
+from gym import spaces
 from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import EvalCallback
 
@@ -13,9 +11,9 @@ class SepsisTreatmentEnv(gym.Env):
         super(SepsisTreatmentEnv, self).__init__()
 
         # 数据加载
-        self.patients = pd.read_csv(patient_data,low_memory=False)  # 患者信息
-        self.infusion_drugs = pd.read_csv(infusion_data,low_memory=False)  # 注射药物信息
-        self.vital_periods = pd.read_csv(vital_data,low_memory=False)  # 生命体征信息
+        self.patients = pd.read_csv(patient_data, low_memory=False)  # 患者信息
+        self.infusion_drugs = pd.read_csv(infusion_data, low_memory=False)  # 注射药物信息
+        self.vital_periods = pd.read_csv(vital_data, low_memory=False)  # 生命体征信息
 
         # 设定状态空间
         self.observation_space = spaces.Box(low=-1, high=np.inf, shape=(3,), dtype=np.float32)  # -1 用于表示缺失值
@@ -38,12 +36,17 @@ class SepsisTreatmentEnv(gym.Env):
         return self.get_state()
 
     def get_state(self):
-        if self.current_step == 0:
+        if self.current_step == 0 or self.current_step >= len(self.current_infusions):
             return np.array([-1, -1, -1])  # 表示缺失的初始状态
 
         infusion_time = self.current_infusions.iloc[self.current_step]['offset']
         recent_vital = self.vital_periods[(self.vital_periods['patient_id'] == self.current_patient_id) &
-                                           (self.vital_periods['timestamp'] <= infusion_time)].iloc[-1]
+                                           (self.vital_periods['timestamp'] <= infusion_time)]
+
+        if recent_vital.empty:
+            return np.array([-1, -1, -1])  # 如果没有找到生命体征数据
+
+        recent_vital = recent_vital.iloc[-1]
 
         heart_rate = recent_vital['heart_rate'] if not pd.isnull(recent_vital['heart_rate']) else -1
         sao2 = recent_vital['sao2'] if not pd.isnull(recent_vital['sao2']) else -1
@@ -91,10 +94,12 @@ vital_data_path = r'vitalperiodic3.csv'
 env = SepsisTreatmentEnv(patient_data_path, infusion_data_path, vital_data_path)
 
 # 初始化 DQN 模型
-model = DQN('MlpPolicy', env, verbose=1, learning_rate=0.001, buffer_size=10000, exploration_fraction=0.1, exploration_final_eps=0.01, target_update_interval=100)
+model = DQN('MlpPolicy', env, verbose=1, learning_rate=0.001, buffer_size=10000,
+            exploration_fraction=0.1, exploration_final_eps=0.01, target_update_interval=100)
 
 # 创建评估回调
-eval_callback = EvalCallback(env, best_model_save_path='./logs/best_model.zip', log_path='./logs/results', eval_freq=500, deterministic=True, render=False)
+eval_callback = EvalCallback(env, best_model_save_path='./logs/best_model.zip',
+                             log_path='./logs/results', eval_freq=500, deterministic=True, render=False)
 
 # 训练模型
 model.learn(total_timesteps=10000, callback=eval_callback)
